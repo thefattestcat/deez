@@ -1,7 +1,11 @@
+import React, { useState } from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Navbar, Button, Modal } from 'react-bootstrap';
+import { makeStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import Slider from '@material-ui/core/Slider';
+
 import './Map.css';
-import { Children } from 'react';
 
 const Sidebar = props => {
   return (
@@ -20,19 +24,39 @@ const Sidebar = props => {
 
 function Map() {
 
+  const [overlayOpacity, setOverlayOpacity] = useState(1);
+
+  function valuetext(value) {
+    return `${value}°C`;
+  }
+
   return (
     <>
       <Navbar bg={'dark'} variant={'dark'}>
         <Navbar.Brand>Geospatial</Navbar.Brand>
       </Navbar>
 
-      <Sidebar header={'Sidebar'} width={'200px'}>
-        <div>asdasd</div>
+      <Sidebar header={'Sidebar'} width={'300px'}>
+        <div>Overlay</div>
+        <Typography id="discrete-slider" gutterBottom>
+          opacity
+      </Typography>
+        <Slider
+          defaultValue={1}
+          getAriaValueText={valuetext}
+          aria-labelledby="discrete-slider"
+          valueLabelDisplay="auto"
+          step={0.1}
+          marks
+          min={0}
+          max={1}
+          onChange={(e,value) => setOverlayOpacity(value)}
+        />
       </Sidebar>
 
       <MapContainer center={[-22.9550010508, -43.1784265109]} zoom={16} scrollWheelZoom={true} maxZoom={17} minZoom={12}>
         <TileLayer
-        //Be able to change base layer
+          //Be able to change base layer
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
@@ -41,7 +65,7 @@ function Map() {
           url='./{z}/{x}/{y}.png'
           tms={true}
           //Make these configurable with state
-          opacity={1}
+          opacity={overlayOpacity}
           minZoom={12}
           maxZoom={17}
         />
