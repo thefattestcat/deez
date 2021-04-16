@@ -1,15 +1,17 @@
 import React, { useState } from 'react'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, GeoJSON } from 'react-leaflet';
 import { Navbar, Button, Modal } from 'react-bootstrap';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Slider from '@material-ui/core/Slider';
 
+import d from './geojson/16may'
+
 import './Map.css';
 
 const Sidebar = props => {
   return (
-    <div id="sidebar" style={{ width: props.width, maxWidth: props.maxWidth }}>
+    <div id="sidebar" style={{ width: props.width, maxWidth: props.maxWidth, height: props.height, maxHeight: props.maxHeight }}>
       <div class="sidebar-wrapper">
         <div id="features" class="panel panel-default">
           <div class="panel-heading">
@@ -30,13 +32,15 @@ function Map() {
     return `${value}°C`;
   }
 
+  console.log(d)
+
   return (
     <>
       <Navbar bg={'dark'} variant={'dark'}>
         <Navbar.Brand>Geospatial</Navbar.Brand>
       </Navbar>
 
-      <Sidebar header={'Sidebar'} width={'300px'}>
+      <Sidebar header={'Sidebar'} width={'250px'} height={'90vh'}>
         <div>Overlay</div>
         <Typography id="discrete-slider" gutterBottom>
           opacity
@@ -69,6 +73,9 @@ function Map() {
           minZoom={12}
           maxZoom={17}
         />
+        
+        <GeoJSON data={d}/>
+
       </MapContainer>
 
     </>
