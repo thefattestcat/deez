@@ -20,7 +20,7 @@ const Sidebar = props => {
       <div class="sidebar-wrapper">
         <div id="features" class="panel panel-default">
           <div class="panel-heading">
-            <h3 class="panel-title">{props.header}</h3>
+            {/* <h3 class="panel-title">{props.header}</h3> */}
           </div>
           {props.children}
         </div>
@@ -94,14 +94,34 @@ function Map() {
     />)
   }
 
+  const [coordinates,setCoordinates] = useState([-43.52953261358661, 172.62224272077717])
+
+
+
+  function onClickButton(e) {
+    const latlng = e.target.value.split(',')
+    const lat = Number(latlng[0])
+    const lng = Number(latlng[1])
+    
+    const finalLatLng = [lat,lng]
+
+    setCoordinates([lat,lng])
+    MapContainer.panTo(finalLatLng)
+    console.log(coordinates, 'changed')
+  }
+
   return (
     <>
       <Navbar bg={'dark'} variant={'dark'}>
         <Navbar.Brand>Geospatial</Navbar.Brand>
+        <Button className='buttons-coordinates' value={[]} onClick={onClickButton}>Rollerston</Button>
+        <Button className='buttons-coordinates'value={[-43.52953261358661,172.62224272077717]} onClick={onClickButton}>Christchurch CBD</Button>
+        <Button className='buttons-coordinates' value={[]} onClick={onClickButton}>Auckland CBD</Button>
+        <Button className='buttons-coordinates' value={[-22.9550010508,-43.1784265109]} onClick={onClickButton}>Rio</Button> 
       </Navbar>
 
       <Sidebar header={'Sidebar'} width={'250px'} height={'90vh'}>
-        <div>Overlay</div>
+        <h2 className='sidebar-header'>Overlays</h2>
         <Typography id="discrete-slider" gutterBottom>
           Opacity
         </Typography>
@@ -156,7 +176,7 @@ function Map() {
         </Select>
 
       </Sidebar>
-      <MapContainer center={[-43.52953261358661, 172.62224272077717]} zoom={16} scrollWheelZoom={true} maxZoom={17} minZoom={12}>
+      <MapContainer center={[coordinates[0],coordinates[1]]} zoom={16} scrollWheelZoom={true} maxZoom={17} minZoom={12}>
         <TileLayer
           //Be able to change base layer
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'

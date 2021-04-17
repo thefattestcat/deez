@@ -14,7 +14,7 @@
   max-width: 100%;
   width: 150px;
   padding-right: 20px;
-  background-color: #535e69 !important;
+  background-color: #49b58f !important;
 }
 
 .sidebar-wrapper {
@@ -54,4 +54,13 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.sidebar-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.buttons-coordinates {
+  margin-right: 20px;
 }
