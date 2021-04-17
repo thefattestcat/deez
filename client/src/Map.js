@@ -88,6 +88,7 @@ function Map() {
 
   function onSnapshotChange(value) {
     const date = snapshots[city][value - 1]
+    setI(value)
     console.log(date)
     setSnapshotIndex(date);
   }
@@ -286,6 +287,7 @@ function Map() {
         <MapConsumer>
           {(map) => {
             map.setView(coordinates)
+            setSnapshotIndex(snapshots[city][i-1])
             return null
           }}
         </MapConsumer>
