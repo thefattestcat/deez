@@ -84,7 +84,7 @@ function Map() {
         />
 
         <TileLayer
-          url='./{z}/{x}/{y}.png'
+          url='./21JAN_final/{z}/{x}/{y}.png'
           tms={true}
           //Make these configurable with state
           opacity={overlayOpacity}
