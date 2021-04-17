@@ -132,6 +132,22 @@ function Map() {
           onChange={(e, value) => onSnapshotChange(value)}
         />
 
+
+        <InputLabel id="label">False Colour overlay</InputLabel>
+        <Select labelId="label" id="select" value="0">
+          <MenuItem value="0">None</MenuItem>
+          <MenuItem value="10">Vegetation</MenuItem>
+          <MenuItem value="20"></MenuItem>
+        </Select>
+
+        <InputLabel id="label">False Colour</InputLabel>
+        <Select labelId="label" id="select" value="0">
+          <MenuItem value="0">None</MenuItem>
+          <MenuItem value="10">Vegetation</MenuItem>
+          <MenuItem value="20"></MenuItem>
+        </Select>
+
+
         <InputLabel id="label">Classification Model</InputLabel>
         <Select labelId="label" id="select" value="0">
           <MenuItem value="0">None</MenuItem>
