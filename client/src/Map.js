@@ -40,7 +40,7 @@ function Map() {
         <Navbar.Brand>Geospatial</Navbar.Brand>
       </Navbar>
 
-      <Sidebar header={'Sidebar'} width={'250px'} height={'90vh'}>
+      <Sidebar header={'Sidebar'} width={'250px'} height={'90vh'}> 
         <div>Overlay</div>
         <Typography id="discrete-slider" gutterBottom>
           Opacity
@@ -76,8 +76,7 @@ function Map() {
 
 
       </Sidebar>
-
-      <MapContainer center={[-22.9550010508, -43.1784265109]} zoom={16} scrollWheelZoom={true} maxZoom={17} minZoom={12}>
+      <MapContainer center={[-43.52953261358661, 172.62224272077717]} zoom={16} scrollWheelZoom={true} maxZoom={17} minZoom={12}>
         <TileLayer
           //Be able to change base layer
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
