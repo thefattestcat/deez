@@ -20,7 +20,7 @@ const Sidebar = props => {
       <div class="sidebar-wrapper">
         <div id="features" class="panel panel-default">
           <div class="panel-heading">
-            {/* <h3 class="panel-title">{props.header}</h3> */}
+            <h3 class="panel-title">{props.header}</h3>
           </div>
           {props.children}
         </div>
@@ -30,41 +30,54 @@ const Sidebar = props => {
 
 
 function Map() {
-  const snapshots = [
-    '11_3',
-    '13_1',
-    '19_1',
-    '21_1',
-    '14_2',
-    '17_2',
-  ]; //Snapshot dates (day_month)
+  const snapshots = {
+    "chch_cbd": [
+      '11_3',
+      '13_1',
+      '19_1',
+      '21_1',
+      '14_2',
+      '17_2',
+    ],
+    "rolleston": [
+      '15_4',
+      '20_9'
+    ],
+    "rio": [
+      '16_5'
+    ]
+  }; //Snapshot dates (day_month)
 
   const [overlayOpacity, setOverlayOpacity] = useState(1);
-  const [snapshotIndex, setSnapshotIndex] = useState(snapshots[0]);
-  const [prediction, setPrediction] = useState(d);
+  const [city, setCity] = useState('rolleston')
+  const [snapshotIndex, setSnapshotIndex] = useState(snapshots[city][0]);
+  const [prediction, setPrediction] = useState('');
   const [task, setTask] = useState('chip');
+  const [coordinates, setCoordinates] = useState([-43.52953261358661, 172.62224272077717])
+
+
 
   function valuetext(value) {
     return `${value}`;
   }
 
   async function getPrediction(date) {
+    if (task !== 'none') {
+      axios.get(`geojson/${date}.json`)
+        .then(res => {
+          console.log(res.data)
+          setPrediction(res.data);
+        })
+        .catch((err) => {
+          console.log(err)
+          setPrediction('')
+        })
 
-    axios.get(`geojson/${date}.json`)
-      .then(res => {
-        console.log(res.data)
-        setPrediction(res.data);
-      })
-      .catch((err) => {
-        console.log(err)
-        setPrediction('')
-      })
-
-
+    }
   }
 
   function onSnapshotChange(value) {
-    const date = snapshots[value - 1]
+    const date = snapshots[city][value - 1]
     console.log(date)
     setSnapshotIndex(date);
     getPrediction(date);
@@ -73,17 +86,19 @@ function Map() {
   function CurrentSnapshot() {
     return (
       <TileLayer
-        url={`./${snapshotIndex}` + '/{z}/{x}/{y}.png'}
+        url={`./cities/${city}/${snapshotIndex}_a` + '/{z}/{x}/{y}.png'}
         tms={true}
-        //Make these configurable with state
         opacity={overlayOpacity}
         minZoom={12}
         maxZoom={17}
+        style={{
+          mixBlendMode: 'difference'
+        }}
       />)
   }
 
   function CurrentPrediction() {
-    return (<GeoJSON
+    return prediction == '' ? <div></div> : <GeoJSON
       data={prediction}
       style={(feature) => {
         switch (feature.properties["class_name"]) {
@@ -91,21 +106,23 @@ function Map() {
           case 'no_building': return { color: "#0000ff" };
         }
       }}
-    />)
+    />
   }
 
-  const [coordinates,setCoordinates] = useState([-43.52953261358661, 172.62224272077717])
+  function CurrentFalseColour () {
 
+  }
 
+  function Curre
 
   function onClickButton(e) {
     const latlng = e.target.value.split(',')
     const lat = Number(latlng[0])
     const lng = Number(latlng[1])
-    
-    const finalLatLng = [lat,lng]
 
-    setCoordinates([lat,lng])
+    const finalLatLng = [lat, lng]
+
+    setCoordinates([lat, lng])
     MapContainer.panTo(finalLatLng)
     console.log(coordinates, 'changed')
   }
@@ -115,12 +132,12 @@ function Map() {
       <Navbar bg={'dark'} variant={'dark'}>
         <Navbar.Brand>Geospatial</Navbar.Brand>
         <Button className='buttons-coordinates' value={[]} onClick={onClickButton}>Rollerston</Button>
-        <Button className='buttons-coordinates'value={[-43.52953261358661,172.62224272077717]} onClick={onClickButton}>Christchurch CBD</Button>
+        <Button className='buttons-coordinates' value={[-43.52953261358661, 172.62224272077717]} onClick={onClickButton}>Christchurch CBD</Button>
         <Button className='buttons-coordinates' value={[]} onClick={onClickButton}>Auckland CBD</Button>
-        <Button className='buttons-coordinates' value={[-22.9550010508,-43.1784265109]} onClick={onClickButton}>Rio</Button> 
+        <Button className='buttons-coordinates' value={[-22.9550010508, -43.1784265109]} onClick={onClickButton}>Rio</Button>
       </Navbar>
 
-      <Sidebar header={'Sidebar'} width={'250px'} height={'90vh'}>
+      <Sidebar width={'250px'} height={'90vh'}>
         <h2 className='sidebar-header'>Overlays</h2>
         <Typography id="discrete-slider" gutterBottom>
           Opacity
@@ -148,7 +165,7 @@ function Map() {
           step={1}
           marks
           min={1}
-          max={snapshots.length}
+          max={snapshots[city].length}
           onChange={(e, value) => onSnapshotChange(value)}
         />
 
@@ -176,7 +193,7 @@ function Map() {
         </Select>
 
       </Sidebar>
-      <MapContainer center={[coordinates[0],coordinates[1]]} zoom={16} scrollWheelZoom={true} maxZoom={17} minZoom={12}>
+      <MapContainer center={[-43.5968, 172.3840]} zoom={16} scrollWheelZoom={true} maxZoom={17} minZoom={12}>
         <TileLayer
           //Be able to change base layer
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
