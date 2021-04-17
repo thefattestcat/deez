@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, GeoJSON } from 'react-leaflet';
+import { MapContainer, MapConsumer, TileLayer, Marker, Popup, GeoJSON } from 'react-leaflet';
 import { Navbar, Button, Modal } from 'react-bootstrap';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -51,13 +51,14 @@ function Map() {
   const [overlayOpacity, setOverlayOpacity] = useState(1);
   const [falsecolourOpacity, setFalseColourOpacity] = useState(0);
   const [blendmode, setBlendmode] = useState('color-burn');
-  const [city, setCity] = useState('rolleston')
+  const [city, setCity] = useState('chch_cbd')
   const [snapshotIndex, setSnapshotIndex] = useState(snapshots[city][0]);
   const [falseColourIndex, setFalseColourIndex] = useState(snapshots[city][0]);
   const [prediction, setPrediction] = useState('');
   const [task, setTask] = useState('chip');
   const [coordinates, setCoordinates] = useState([-43.52953261358661, 172.62224272077717])
 
+  const [i, setI] = useState(1)
 
 
   function valuetext(value) {
@@ -83,7 +84,7 @@ function Map() {
     const date = snapshots[city][value - 1]
     console.log(date)
     setSnapshotIndex(date);
-    getPrediction(date);
+    //getPrediction(date);
   }
 
   function onFalseColourChange(value) {
@@ -94,7 +95,7 @@ function Map() {
   function CurrentSnapshot() {
     return (
       <TileLayer
-        url={`./cities/${city}/${snapshotIndex}_a` + '/{z}/{x}/{y}.png'}
+        url={`./cities/${city}/${snapshotIndex}` + '/{z}/{x}/{y}.png'}
         tms={true}
         opacity={overlayOpacity}
         minZoom={12}
@@ -131,22 +132,27 @@ function Map() {
     const latlng = e.target.value.split(',')
     const lat = Number(latlng[0])
     const lng = Number(latlng[1])
+    const cityname = latlng[2]
 
     const finalLatLng = [lat, lng]
-
+    setCity(cityname)
+    setSnapshotIndex(snapshots[city][0])
+    setI(1)
+    onFalseColourChange(2)
+    setI(1)
     setCoordinates([lat, lng])
-    MapContainer.panTo(finalLatLng)
-    console.log(coordinates, 'changed')
+    
+    
+    console.log(coordinates, 'changed', cityname)
   }
 
   return (
     <>
       <Navbar bg={'dark'} variant={'dark'}>
         <Navbar.Brand>Geospatial</Navbar.Brand>
-        <Button className='buttons-coordinates' value={[]} onClick={onClickButton}>Rollerston</Button>
-        <Button className='buttons-coordinates' value={[-43.52953261358661, 172.62224272077717]} onClick={onClickButton}>Christchurch CBD</Button>
-        <Button className='buttons-coordinates' value={[]} onClick={onClickButton}>Auckland CBD</Button>
-        <Button className='buttons-coordinates' value={[-22.9550010508, -43.1784265109]} onClick={onClickButton}>Rio</Button>
+        <Button className='buttons-coordinates' value={[-43.5968, 172.3840, 'rolleston']} onClick={onClickButton}>Rolleston</Button>
+        <Button className='buttons-coordinates' value={[-43.52953261358661, 172.62224272077717, 'chch_cbd']} onClick={onClickButton}>Christchurch CBD</Button>
+        <Button className='buttons-coordinates' value={[-22.9550010508, -43.1784265109, 'rio']} onClick={onClickButton}>Rio</Button>
       </Navbar>
 
       <Sidebar width={'250px'} height={'90vh'}>
@@ -155,7 +161,7 @@ function Map() {
           Opacity
         </Typography>
         <Slider
-          defaultValue={1}
+          defaultValue={i}
           getAriaValueText={valuetext}
           aria-labelledby="discrete-slider"
           valueLabelDisplay="auto"
@@ -170,7 +176,7 @@ function Map() {
           Time-Series
         </Typography>
         <Slider
-          defaultValue={1}
+          defaultValue={i}
           getAriaValueText={valuetext}
           aria-labelledby="time-series"
           valueLabelDisplay="auto"
@@ -231,6 +237,13 @@ function Map() {
 
       </Sidebar>
       <MapContainer center={[-43.5968, 172.3840]} zoom={16} scrollWheelZoom={true} maxZoom={17} minZoom={12}>
+        <MapConsumer>
+          {(map) => {
+            map.setView(coordinates)
+            return null
+          }}
+        </MapConsumer>
+
         <TileLayer
           //Be able to change base layer
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
