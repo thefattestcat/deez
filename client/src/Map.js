@@ -43,7 +43,7 @@ function Map() {
       <Sidebar header={'Sidebar'} width={'250px'} height={'90vh'}>
         <div>Overlay</div>
         <Typography id="discrete-slider" gutterBottom>
-          opacity
+          Opacity
       </Typography>
         <Slider
           defaultValue={1}
@@ -56,6 +56,25 @@ function Map() {
           max={1}
           onChange={(e,value) => setOverlayOpacity(value)}
         />
+
+      <Typography id="discrete-slider" gutterBottom>
+          Time-Series
+      </Typography>
+        <Slider
+          defaultValue={1}
+          getAriaValueText={valuetext}
+          aria-labelledby="discrete-slider"
+          valueLabelDisplay="auto"
+          step={0.1}
+          marks
+          min={0}
+          max={1}
+          onChange={(e,value) => setOverlayOpacity(value)}
+        />
+
+
+
+
       </Sidebar>
 
       <MapContainer center={[-22.9550010508, -43.1784265109]} zoom={16} scrollWheelZoom={true} maxZoom={17} minZoom={12}>
