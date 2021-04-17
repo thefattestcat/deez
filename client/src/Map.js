@@ -49,8 +49,11 @@ function Map() {
   }; //Snapshot dates (day_month)
 
   const [overlayOpacity, setOverlayOpacity] = useState(1);
+  const [falsecolourOpacity, setFalseColourOpacity] = useState(0);
+  const [blendmode, setBlendmode] = useState('color-burn');
   const [city, setCity] = useState('rolleston')
   const [snapshotIndex, setSnapshotIndex] = useState(snapshots[city][0]);
+  const [falseColourIndex, setFalseColourIndex] = useState(snapshots[city][0]);
   const [prediction, setPrediction] = useState('');
   const [task, setTask] = useState('chip');
   const [coordinates, setCoordinates] = useState([-43.52953261358661, 172.62224272077717])
@@ -83,6 +86,11 @@ function Map() {
     getPrediction(date);
   }
 
+  function onFalseColourChange(value) {
+    const date = snapshots[city][value - 1]
+    console.log(date)
+    setFalseColourIndex(date);
+  }
   function CurrentSnapshot() {
     return (
       <TileLayer
@@ -91,9 +99,19 @@ function Map() {
         opacity={overlayOpacity}
         minZoom={12}
         maxZoom={17}
-        style={{
-          mixBlendMode: 'difference'
-        }}
+      />)
+  }
+
+  function CurrentOverlay() {
+    return (
+      <TileLayer
+        url={`./cities/${city}/${falseColourIndex}_b` + '/{z}/{x}/{y}.png'}
+        tms={true}
+        opacity={falsecolourOpacity}
+        minZoom={12}
+        maxZoom={17}
+        mixBlendMode={blendmode}
+        className={'fcOverlay'}
       />)
   }
 
@@ -107,14 +125,6 @@ function Map() {
         }
       }}
     />
-  }
-
-  function CurrentFalseColour () {
-
-  }
-
-  function CurrentFalseColourOverlay () {
-    
   }
 
   function onClickButton(e) {
@@ -178,6 +188,20 @@ function Map() {
           <MenuItem value="10">Vegetation</MenuItem>
           <MenuItem value="20"></MenuItem>
         </Select>
+        <Slider
+          defaultValue={0}
+          getAriaValueText={valuetext}
+          aria-labelledby="discrete-slider"
+          valueLabelDisplay="auto"
+          step={0.1}
+          marks
+          min={0}
+          max={1}
+          onChange={(e, value) => {
+            setFalseColourOpacity(value)
+            setBlendmode('color-burn')
+          }}
+        />
 
         <InputLabel id="label">False Colour</InputLabel>
         <Select labelId="label" id="select" value="0">
@@ -185,6 +209,17 @@ function Map() {
           <MenuItem value="10">Vegetation</MenuItem>
           <MenuItem value="20"></MenuItem>
         </Select>
+        <Slider
+          defaultValue={1}
+          getAriaValueText={valuetext}
+          aria-labelledby="time-series"
+          valueLabelDisplay="auto"
+          step={1}
+          marks
+          min={1}
+          max={snapshots[city].length}
+          onChange={(e, value) => onFalseColourChange(value)}
+        />
 
 
         <InputLabel id="label">Classification Model</InputLabel>
@@ -203,6 +238,7 @@ function Map() {
         />
 
         <CurrentSnapshot />
+        <CurrentOverlay />
         <CurrentPrediction />
 
       </MapContainer>

@@ -17,6 +17,10 @@
   background-color: #49b58f !important;
 }
 
+.fcOverlay {
+  mix-blend-mode: 'color-burn' !important;
+}
+
 .sidebar-wrapper {
   padding-left: 15px;
 }
