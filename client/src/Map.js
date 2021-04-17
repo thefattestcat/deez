@@ -4,8 +4,13 @@ import { Navbar, Button, Modal } from 'react-bootstrap';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Slider from '@material-ui/core/Slider';
+import InputLabel from '@material-ui/core/InputLabel';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
 
-import d from './geojson/16may'
+import axios from 'axios';
+
+import d from './geojson/21_1'
 
 import './Map.css';
 
@@ -25,33 +30,69 @@ const Sidebar = props => {
 
 
 function Map() {
-  const snapshots = ['21_1','17_2']; //Snapshot dates (day_month)
+  const snapshots = [
+    '11_3',
+    '13_1',
+    '19_1',
+    '21_1',
+    '14_2',
+    '17_2',
+  ]; //Snapshot dates (day_month)
 
   const [overlayOpacity, setOverlayOpacity] = useState(1);
   const [snapshotIndex, setSnapshotIndex] = useState(snapshots[0]);
-
+  const [prediction, setPrediction] = useState(d);
+  const [task, setTask] = useState('chip');
 
   function valuetext(value) {
     return `${value}`;
   }
 
-  function getSnapshotDate (value) {
-    setSnapshotIndex(snapshots[value-1]);
-    console.log(snapshotIndex)
+  async function getPrediction(date) {
+
+    axios.get(`geojson/${date}.json`)
+      .then(res => {
+        console.log(res.data)
+        setPrediction(res.data);
+      })
+      .catch((err) => {
+        console.log(err)
+        setPrediction('')
+      })
+
+
   }
 
-  function CurrentSnapshot () {
-    return (<TileLayer
-      url={`./${snapshotIndex}` + '/{z}/{x}/{y}.png'}
-      tms={true}
-      //Make these configurable with state
-      opacity={overlayOpacity}
-      minZoom={12}
-      maxZoom={17}
+  function onSnapshotChange(value) {
+    const date = snapshots[value - 1]
+    console.log(date)
+    setSnapshotIndex(date);
+    getPrediction(date);
+  }
+
+  function CurrentSnapshot() {
+    return (
+      <TileLayer
+        url={`./${snapshotIndex}` + '/{z}/{x}/{y}.png'}
+        tms={true}
+        //Make these configurable with state
+        opacity={overlayOpacity}
+        minZoom={12}
+        maxZoom={17}
+      />)
+  }
+
+  function CurrentPrediction() {
+    return (<GeoJSON
+      data={prediction}
+      style={(feature) => {
+        switch (feature.properties["class_name"]) {
+          case 'building': return { color: "#ff0000" };
+          case 'no_building': return { color: "#0000ff" };
+        }
+      }}
     />)
   }
-
-  console.log(d)
 
   return (
     <>
@@ -63,7 +104,7 @@ function Map() {
         <div>Overlay</div>
         <Typography id="discrete-slider" gutterBottom>
           Opacity
-      </Typography>
+        </Typography>
         <Slider
           defaultValue={1}
           getAriaValueText={valuetext}
@@ -76,20 +117,27 @@ function Map() {
           onChange={(e, value) => setOverlayOpacity(value)}
         />
 
-        <Typography id="discrete-slider" gutterBottom>
+        <Typography id="time-series" gutterBottom>
           Time-Series
-      </Typography>
+        </Typography>
         <Slider
           defaultValue={1}
           getAriaValueText={valuetext}
-          aria-labelledby="discrete-slider"
+          aria-labelledby="time-series"
           valueLabelDisplay="auto"
           step={1}
           marks
           min={1}
-          max={5}
-          onChange={(e, value) => getSnapshotDate(value)}
+          max={snapshots.length}
+          onChange={(e, value) => onSnapshotChange(value)}
         />
+
+        <InputLabel id="label">Classification Model</InputLabel>
+        <Select labelId="label" id="select" value="0">
+          <MenuItem value="0">None</MenuItem>
+          <MenuItem value="10">Chip</MenuItem>
+          <MenuItem value="20">Semantic Segmentation</MenuItem>
+        </Select>
 
       </Sidebar>
       <MapContainer center={[-43.52953261358661, 172.62224272077717]} zoom={16} scrollWheelZoom={true} maxZoom={17} minZoom={12}>
@@ -100,8 +148,7 @@ function Map() {
         />
 
         <CurrentSnapshot />
-
-        <GeoJSON data={d} />
+        <CurrentPrediction />
 
       </MapContainer>
 
