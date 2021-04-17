@@ -7,6 +7,7 @@ import Slider from '@material-ui/core/Slider';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
+import Divider from '@material-ui/core/Divider';
 
 import axios from 'axios';
 
@@ -16,7 +17,7 @@ import './Map.css';
 
 const Sidebar = props => {
   return (
-    <div id="sidebar" style={{ width: props.width, maxWidth: props.maxWidth, height: props.height, maxHeight: props.maxHeight }}>
+    <div id="sidebar" style={{ width: props.width, maxWidth: props.maxWidth, height: props.height, maxHeight: props.maxHeight, overflowY: 'scroll' }}>
       <div class="sidebar-wrapper">
         <div id="features" class="panel panel-default">
           <div class="panel-heading">
@@ -34,10 +35,10 @@ function Map() {
     "chch_cbd": [
       '11_3',
       '13_1',
-      '19_1',
-      '21_1',
       '14_2',
       '17_2',
+      '19_1',
+      '21_1',
     ],
     "rolleston": [
       '15_4',
@@ -45,6 +46,9 @@ function Map() {
     ],
     "rio": [
       '16_5'
+    ],
+    "mexico_city": [
+      'MC'
     ]
   }; //Snapshot dates (day_month)
 
@@ -56,7 +60,9 @@ function Map() {
   const [falseColourIndex, setFalseColourIndex] = useState(snapshots[city][0]);
   const [prediction, setPrediction] = useState('');
   const [task, setTask] = useState('chip');
-  const [coordinates, setCoordinates] = useState([-43.52953261358661, 172.62224272077717])
+  const [coordinates, setCoordinates] = useState([-43.532952, 172.638405,])
+  const [falseColourCombination, setCombination] = useState('_a')
+  const [snapCombination, setSnapCombination] = useState('')
 
   const [i, setI] = useState(1)
 
@@ -65,9 +71,9 @@ function Map() {
     return `${value}`;
   }
 
-  async function getPrediction(date) {
+  async function getPrediction() {
     if (task !== 'none') {
-      axios.get(`geojson/${date}.json`)
+      axios.get(`geojson/${snapshotIndex}.json`)
         .then(res => {
           console.log(res.data)
           setPrediction(res.data);
@@ -84,7 +90,6 @@ function Map() {
     const date = snapshots[city][value - 1]
     console.log(date)
     setSnapshotIndex(date);
-    //getPrediction(date);
   }
 
   function onFalseColourChange(value) {
@@ -95,7 +100,7 @@ function Map() {
   function CurrentSnapshot() {
     return (
       <TileLayer
-        url={`./cities/${city}/${snapshotIndex}` + '/{z}/{x}/{y}.png'}
+        url={`./cities/${city}/${snapshotIndex}${snapCombination}` + '/{z}/{x}/{y}.png'}
         tms={true}
         opacity={overlayOpacity}
         minZoom={12}
@@ -106,7 +111,8 @@ function Map() {
   function CurrentOverlay() {
     return (
       <TileLayer
-        url={`./cities/${city}/${falseColourIndex}_b` + '/{z}/{x}/{y}.png'}
+        id={'overlay'}
+        url={`./cities/${city}/${falseColourIndex}${falseColourCombination}` + '/{z}/{x}/{y}.png'}
         tms={true}
         opacity={falsecolourOpacity}
         minZoom={12}
@@ -117,15 +123,16 @@ function Map() {
   }
 
   function CurrentPrediction() {
-    return prediction == '' ? <div></div> : <GeoJSON
-      data={prediction}
-      style={(feature) => {
-        switch (feature.properties["class_name"]) {
-          case 'building': return { color: "#ff0000" };
-          case 'no_building': return { color: "#0000ff" };
-        }
-      }}
-    />
+    return task == 'none' ? <div></div> :
+      <GeoJSON
+        data={prediction}
+        style={(feature) => {
+          switch (feature.properties["class_name"]) {
+            case 'building': return { color: "#ff0000" };
+            case 'no_building': return { color: "#0000ff" };
+          }
+        }}
+      />
   }
 
   function onClickButton(e) {
@@ -134,16 +141,41 @@ function Map() {
     const lng = Number(latlng[1])
     const cityname = latlng[2]
 
+
     const finalLatLng = [lat, lng]
     setCity(cityname)
     setSnapshotIndex(snapshots[city][0])
     setI(1)
     onFalseColourChange(2)
-    setI(1)
+    setSnapCombination("")
+    setCombination("")
+    setTask("none")
     setCoordinates([lat, lng])
-    
-    
+
     console.log(coordinates, 'changed', cityname)
+  }
+
+  function handleFalseColour(e) {
+    const value = e.currentTarget.dataset.value
+    console.log(e.currentTarget)
+    let c = document.querySelector('div.leaflet-layer.fcOverlay');
+    c.style.mixBlendMode = value
+  }
+
+  function handleCombination(e) {
+    const value = e.currentTarget.dataset.value
+    setCombination(value);
+  }
+
+  function handleSnapshot(e) {
+    const value = e.currentTarget.dataset.value
+    setSnapCombination(value);
+  }
+
+  function handleTask(e) {
+    const value = e.currentTarget.dataset.value
+    setTask(value)
+    getPrediction()
   }
 
   return (
@@ -151,12 +183,13 @@ function Map() {
       <Navbar bg={'dark'} variant={'dark'}>
         <Navbar.Brand>Geospatial</Navbar.Brand>
         <Button className='buttons-coordinates' value={[-43.5968, 172.3840, 'rolleston']} onClick={onClickButton}>Rolleston</Button>
-        <Button className='buttons-coordinates' value={[-43.52953261358661, 172.62224272077717, 'chch_cbd']} onClick={onClickButton}>Christchurch CBD</Button>
+        <Button className='buttons-coordinates' value={[-43.532952, 172.638405, 'chch_cbd']} onClick={onClickButton}>Christchurch CBD</Button>
         <Button className='buttons-coordinates' value={[-22.9550010508, -43.1784265109, 'rio']} onClick={onClickButton}>Rio</Button>
+        <Button className='buttons-coordinates' value={[19.36606,-99.18137, 'mexico_city']} onClick={onClickButton}>Mexico City</Button>
       </Navbar>
 
       <Sidebar width={'250px'} height={'90vh'}>
-        <h2 className='sidebar-header'>Overlays</h2>
+        <h2 className='sidebar-header'>Snapshot</h2>
         <Typography id="discrete-slider" gutterBottom>
           Opacity
         </Typography>
@@ -187,15 +220,26 @@ function Map() {
           onChange={(e, value) => onSnapshotChange(value)}
         />
 
-
-        <InputLabel id="label">False Colour overlay</InputLabel>
-        <Select labelId="label" id="select" value="0">
-          <MenuItem value="0">None</MenuItem>
-          <MenuItem value="10">Vegetation</MenuItem>
-          <MenuItem value="20"></MenuItem>
+        <InputLabel id="false">False Colour</InputLabel>
+        <Select labelId="false" id="select" value="">
+          <MenuItem value="" onClick={handleSnapshot}>RGB</MenuItem>
+          <MenuItem value="_b" onClick={handleSnapshot}>Vegetation (6,7,4)</MenuItem>
+          <MenuItem value="_a" onClick={handleSnapshot}>(8,7,4)</MenuItem>
         </Select>
+
+        <InputLabel id="label">Classification Model</InputLabel>
+        <Select labelId="label" id="select" value="none">
+          <MenuItem value="none" onClick={handleTask}>None</MenuItem>
+          <MenuItem value="chip" onClick={handleTask}>Chip</MenuItem>
+          <MenuItem value="sem-seg" onClick={handleTask}>Semantic Segmentation</MenuItem>
+        </Select>
+
+        <h2 className='sidebar-header' style={{ paddingTop: '20px' }}>Overlay</h2>
+        <Typography id="time-series" gutterBottom>
+          Overlay opacity
+        </Typography>
         <Slider
-          defaultValue={0}
+          defaultValue={0.5}
           getAriaValueText={valuetext}
           aria-labelledby="discrete-slider"
           valueLabelDisplay="auto"
@@ -208,13 +252,6 @@ function Map() {
             setBlendmode('color-burn')
           }}
         />
-
-        <InputLabel id="label">False Colour</InputLabel>
-        <Select labelId="label" id="select" value="0">
-          <MenuItem value="0">None</MenuItem>
-          <MenuItem value="10">Vegetation</MenuItem>
-          <MenuItem value="20"></MenuItem>
-        </Select>
         <Slider
           defaultValue={1}
           getAriaValueText={valuetext}
@@ -227,13 +264,22 @@ function Map() {
           onChange={(e, value) => onFalseColourChange(value)}
         />
 
-
-        <InputLabel id="label">Classification Model</InputLabel>
-        <Select labelId="label" id="select" value="0">
-          <MenuItem value="0">None</MenuItem>
-          <MenuItem value="10">Chip</MenuItem>
-          <MenuItem value="20">Semantic Segmentation</MenuItem>
+        <InputLabel id="label">False Colour</InputLabel>
+        <Select labelId="label" id="select" value="">
+          <MenuItem value="" onClick={handleCombination}>None</MenuItem>
+          <MenuItem value="_b" onClick={handleCombination}>Vegetation (6,7,4)</MenuItem>
+          <MenuItem value="_a" onClick={handleCombination}>(8,7,4)</MenuItem>
         </Select>
+
+        <InputLabel id="label" style={{ paddingTop: '15px' }}>Blend mode</InputLabel>
+        <Select labelId="label" id="select" value="normal">
+          <MenuItem value="normal" onClick={handleFalseColour}>None</MenuItem>
+          <MenuItem value="difference" onClick={handleFalseColour}>Difference</MenuItem>
+          <MenuItem value="color-burn" onClick={handleFalseColour}>Color Burn</MenuItem>
+          <MenuItem value="subtract" onClick={handleFalseColour}>Subtract</MenuItem>
+        </Select>
+
+
 
       </Sidebar>
       <MapContainer center={[-43.5968, 172.3840]} zoom={16} scrollWheelZoom={true} maxZoom={17} minZoom={12}>
