@@ -113,7 +113,9 @@ function Map() {
 
   }
 
-  function Curre
+  function CurrentFalseColourOverlay () {
+    
+  }
 
   function onClickButton(e) {
     const latlng = e.target.value.split(',')
